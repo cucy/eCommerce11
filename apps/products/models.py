@@ -22,6 +22,16 @@ def upload_image_path(instance, filename):
     )
 
 
+class ProductManager(models.Manager):
+    """商品模型管理器"""
+
+    def get_by_id(self, id):
+        qs = self.get_queryset().filter(id=id)  # Product.objects == self.get_queryset()
+        if qs.count() == 1:
+            return qs.first()
+        return None
+
+
 class Product(models.Model):
     """商品模型"""
     title = models.CharField(max_length=120, verbose_name="商品名")
@@ -38,3 +48,5 @@ class Product(models.Model):
     class Meta:
         verbose_name = '商品模型'
         verbose_name_plural = verbose_name
+
+    objects = ProductManager()
