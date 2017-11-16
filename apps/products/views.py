@@ -6,6 +6,26 @@ from django.views.generic import ListView, DetailView
 from .models import Product
 
 
+class ProductFeaturedListView(ListView):
+    """商品特色列表视图"""
+    template_name = 'products/list.html'
+
+    def get_queryset(self):
+        return Product.objects.all().featured()
+
+
+class ProductFeaturedDetailView(DetailView):
+    """ 商品详情特色视图"""
+    queryset = Product.objects.all().featured()
+    template_name = "products/featured-detail.html"
+
+    """ 
+    def get_queryset(self, *args, **kwargs):
+        request = self.request
+        return Product.objects.featured()
+    """
+
+
 class ProductListView(ListView):
     """商品列表"""
     # queryset = Product.objects.all()
@@ -51,6 +71,8 @@ def product_detail_view(request, pk=None, *args, **kwargs):
         Http404("商品信息不存在")
     context["object"] = instanceobj
     """
+    # instance = Product.objects.get(pk=pk, featured=True) #id
+    # instance = get_object_or_404(Product, pk=pk, featured=True)
     instance = Product.objects.get_by_id(pk)
     if instance is None:
         raise Http404("商品信息不存在")
