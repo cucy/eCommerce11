@@ -11,7 +11,8 @@ class SearchProductView(ListView):
         method_dict = request.GET
         query = method_dict.get('q', None)  # method_dict['q']
         if query is not None:
-            return Product.objects.filter(title__icontains=query)
+            # return Product.objects.filter(title__icontains=query)
+            return Product.objects.search(query)
         return Product.objects.featured()
 
     def get_context_data(self, **kwargs):
