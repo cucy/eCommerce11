@@ -2,6 +2,8 @@ import os
 import random
 
 from django.db import models
+from django.db.models.signals import pre_save, post_save
+from .utils import unique_slug_generator
 
 
 def get_filename_ext(filepath):
@@ -54,6 +56,7 @@ class ProductManager(models.Manager):
 class Product(models.Model):
     """商品模型"""
     title = models.CharField(max_length=120, verbose_name="商品名")
+    slug = models.SlugField(blank=True, unique=True)
     description = models.TextField(verbose_name='商品描述')
     price = models.DecimalField(decimal_places=2, max_digits=20, default=39.99, verbose_name="商品价格")
     image = models.ImageField(upload_to=upload_image_path, null=True, blank=True)
@@ -71,3 +74,12 @@ class Product(models.Model):
         verbose_name_plural = verbose_name
 
     objects = ProductManager()
+
+
+def product_pre_save_receiver(sender, instance, *args, **kwargs):
+    print(locals())
+    if not instance.slug:
+        instance.slug = unique_slug_generator(instance)
+
+
+pre_save.connect(product_pre_save_receiver, sender=Product)  # 发送给接受者， 触发信号
