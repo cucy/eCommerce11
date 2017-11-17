@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 
-
 {% block content %}
     <h1>Cart</h1>
 
@@ -18,7 +17,7 @@
                 <tr>
                     <th scope="row">{{ forloop.counter }}</th>
                     <td><a href='{{ product.get_absolute_url }}'>{{ product.title }}</a>
-                        <small><a href='#'>Remove?</a></small>
+                        {% include 'products/snippets/update-cart.html' with product=product cart=cart in_cart=True %}
                     </td>
                     <td>{{ product.price }}</td>
                 </tr>
@@ -37,6 +36,5 @@
     {% else %}
         <p class='lead'>Cart is empty</p>
     {% endif %}
-
 
 {% endblock %}
