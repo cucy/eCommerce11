@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 
 from .views import home_page, about_page, contact_page, login_page, register_page
-from carts.views import cart_home
+
 urlpatterns = [
     url(r'^$', home_page, name='home'),
     url(r'^about/$', about_page, name='about'),
@@ -15,7 +15,7 @@ urlpatterns = [
 
     url(r'^products/', include('products.urls', namespace='products')),
     url(r'^search/', include("search.urls", namespace='search')),
-    url(r'^cart/$', cart_home, name='cart'),
+    url(r'^cart/', include("carts.urls", namespace='cart')),
 
     url(r'^admin/', admin.site.urls),
     url(r'^tem/$', TemplateView.as_view(template_name='example.html')),
