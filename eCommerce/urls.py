@@ -2,6 +2,8 @@ from django.conf import settings
 from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.views.generic import TemplateView
+
 from .views import home_page, about_page, contact_page, login_page, register_page
 
 urlpatterns = [
@@ -14,6 +16,8 @@ urlpatterns = [
     url(r'^products/', include('products.urls', namespace='products')),
 
     url(r'^admin/', admin.site.urls),
+    url(r'^tem/$', TemplateView.as_view(template_name='example.html')),
+
 ]
 
 if settings.DEBUG:
