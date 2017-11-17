@@ -4,7 +4,7 @@ from products.models import Product
 
 
 class SearchProductView(ListView):
-    template_name = 'products/list.html'
+    template_name = 'search/view.html'
 
     def get_queryset(self):
         request = self.request
@@ -13,3 +13,9 @@ class SearchProductView(ListView):
         if query is not None:
             return Product.objects.filter(title__icontains=query)
         return Product.objects.featured()
+
+    def get_context_data(self, **kwargs):
+        context = super(SearchProductView, self).get_context_data(**kwargs)
+        query = self.request.GET.get('q')
+        context['query'] = query
+        return context
