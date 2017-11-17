@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^register/$', register_page, name='register'),
 
     url(r'^products/', include('products.urls', namespace='products')),
+    url(r'^search/', include("search.urls", namespace='search')),
 
     url(r'^admin/', admin.site.urls),
     url(r'^tem/$', TemplateView.as_view(template_name='example.html')),
