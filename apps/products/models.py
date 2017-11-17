@@ -40,7 +40,8 @@ class ProductQuerySet(models.query.QuerySet):
         lookups = (
                 Q(title__icontains=query) |
                 Q(description__icontains=query) |
-                Q(price__icontains=query)
+                Q(price__icontains=query) |
+                Q(tag__title__icontains=query)  # 外键查询
         )
         return self.filter(lookups).distinct()
 
