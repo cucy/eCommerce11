@@ -4,6 +4,10 @@ from django import forms
 User = get_user_model()
 
 
+class GuestForm(forms.Form):
+    email = forms.EmailField()
+
+
 class LoginForm(forms.Form):
     """登录表单"""
     username = forms.CharField()
