@@ -28,8 +28,8 @@ class Order(models.Model):
 
     def update_total(self):
         """计算订单总价格"""
-        cart_total = self.cart.total
-        shipping_total = self.shipping_total
+        cart_total = round(self.cart.total, 2)
+        shipping_total = round(self.shipping_total, 2)
         new_total = cart_total + shipping_total
         self.total = new_total
         self.save()
