@@ -2,10 +2,10 @@ import math
 from django.db import models
 from django.db.models.signals import pre_save, post_save
 
+from addresses.models import Address
 from billing.models import BillingProfile
 from carts.models import Cart
 from eCommerce.utils import unique_order_id_generator
-from addresses.models import Address
 
 ORDER_STATUS_CHOICES = (
     ('created', 'Created'),
@@ -21,7 +21,8 @@ class OrderManager(models.Manager):
         qs = self.get_queryset().filter(
             billing_profile=billing_profile,
             cart=cart_obj,
-            active=True
+            active=True,
+            status='created'
         )
         if qs.count() == 1:
             obj = qs.first()
@@ -30,11 +31,10 @@ class OrderManager(models.Manager):
                 billing_profile=billing_profile,
                 cart=cart_obj)
             created = True
-            return obj, created
-
-            # Random, Unique
+        return obj, created
 
 
+# Random, Unique
 class Order(models.Model):
     billing_profile = models.ForeignKey(BillingProfile, null=True, blank=True)
     order_id = models.CharField(max_length=120, blank=True)  # AB31DE3
@@ -46,10 +46,10 @@ class Order(models.Model):
     total = models.DecimalField(default=0.00, max_digits=100, decimal_places=2)
     active = models.BooleanField(default=True)
 
-    objects = OrderManager()
-
     def __str__(self):
         return self.order_id
+
+    objects = OrderManager()
 
     def update_total(self):
         cart_total = self.cart.total
@@ -59,6 +59,21 @@ class Order(models.Model):
         self.total = formatted_total
         self.save()
         return new_total
+
+    def check_done(self):
+        billing_profile = self.billing_profile
+        shipping_address = self.shipping_address
+        billing_address = self.billing_address
+        total = self.total
+        if billing_profile and shipping_address and billing_address and total > 0:
+            return True
+        return False
+
+    def mark_paid(self):
+        if self.check_done():
+            self.status = "paid"
+            self.save()
+        return self.status
 
 
 def pre_save_create_order_id(sender, instance, *args, **kwargs):
