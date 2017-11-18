@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
+
 User = get_user_model()
 
 
@@ -13,7 +14,7 @@ class UserAdminCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email',)  # 'full_name',)
+        fields = ('full_name', 'email',)  # 'full_name',)
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -32,6 +33,7 @@ class UserAdminCreationForm(forms.ModelForm):
         return user
 
 
+
 class UserAdminChangeForm(forms.ModelForm):
     """A form for updating users. Includes all the fields on
     the user, but replaces the password field with admin's
@@ -41,7 +43,7 @@ class UserAdminChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'active', 'admin')
+        fields = ('full_name', 'email', 'password', 'active', 'admin')
 
     def clean_password(self):
         # Regardless of what the user provides, return the initial value.
