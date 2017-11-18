@@ -1,3 +1,4 @@
+import math
 from django.db import models
 
 from carts.models import Cart
@@ -28,10 +29,11 @@ class Order(models.Model):
 
     def update_total(self):
         """计算订单总价格"""
-        cart_total = round(self.cart.total, 2)
-        shipping_total = round(self.shipping_total, 2)
-        new_total = cart_total + shipping_total
-        self.total = new_total
+        cart_total = self.cart.total
+        shipping_total = self.shipping_total
+        new_total = math.fsum([cart_total, shipping_total])
+        formatted_total = format(new_total, '.2f')
+        self.total = formatted_total
         self.save()
         return new_total
 
