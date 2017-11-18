@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'billing.apps.BillingConfig',
     'addresses.apps.AddressesConfig',
 ]
-
+AUTH_USER_MODEL = 'accounts.User'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
