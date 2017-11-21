@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'billing.apps.BillingConfig',
     'addresses.apps.AddressesConfig',
+    'analytics.apps.AnalyticsConfig',  # 自定义分析
 ]
 AUTH_USER_MODEL = 'accounts.User'
 MIDDLEWARE = [
