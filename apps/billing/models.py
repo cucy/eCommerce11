@@ -3,15 +3,14 @@ from django.db import models
 from django.db.models.signals import post_save, pre_save
 
 from accounts.models import GuestEmail
-
 User = settings.AUTH_USER_MODEL
 
 # abc@teamcfe.com -->> 1000000 billing profiles
 # user abc@teamcfe.com -- 1 billing profile
 
 import stripe
-
 stripe.api_key = "sk_test_cu1lQmcg1OLffhLvYrSCp5XE"
+
 
 
 class BillingProfileManager(models.Manager):
@@ -33,7 +32,6 @@ class BillingProfileManager(models.Manager):
             pass
         return obj, created
 
-
 class BillingProfile(models.Model):
     user = models.OneToOneField(User, null=True, blank=True)
     email = models.EmailField()
@@ -51,6 +49,20 @@ class BillingProfile(models.Model):
     def charge(self, order_obj, card=None):
         return Charge.objects.do(self, order_obj, card)
 
+    def get_cards(self):
+        return self.card_set.all()
+
+    @property
+    def has_card(self):  # instance.has_card
+        card_qs = self.get_cards()
+        return card_qs.exists()  # True or False
+
+    @property
+    def default_card(self):
+        default_cards = self.get_cards().filter(default=True)
+        if default_cards.exists():
+            return default_cards.first()
+        return None
 
 def billing_profile_created_receiver(sender, instance, *args, **kwargs):
     if not instance.customer_id and instance.email:
@@ -61,14 +73,12 @@ def billing_profile_created_receiver(sender, instance, *args, **kwargs):
         print(customer)
         instance.customer_id = customer.id
 
-
 pre_save.connect(billing_profile_created_receiver, sender=BillingProfile)
 
 
 def user_created_receiver(sender, instance, created, *args, **kwargs):
     if created and instance.email:
         BillingProfile.objects.get_or_create(user=instance, email=instance.email)
-
 
 post_save.connect(user_created_receiver, sender=User)
 
@@ -77,7 +87,7 @@ class CardManager(models.Manager):
     def add_new(self, billing_profile, token):
         if token:
             customer = stripe.Customer.retrieve(billing_profile.customer_id)
-            card_response = customer.sources.create(source=token)
+            stripe_card_response = customer.sources.create(source=token)
             new_card = self.model(
                 billing_profile=billing_profile,
                 stripe_id=stripe_card_response.id,
