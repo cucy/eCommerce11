@@ -4,9 +4,9 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils.http import is_safe_url
 
-
 from .forms import LoginForm, RegisterForm, GuestForm
 from .models import GuestEmail
+from .signals import user_logged_in
 
 
 def guest_register_view(request):
@@ -43,6 +43,8 @@ class LoginView(FormView):
         user = authenticate(request, username=email, password=password)
         if user is not None:
             login(request, user)
+            # 用户登录触发信号 save session to models
+            user_logged_in.send(user.__class__, instance=user, request=request)
             try:
                 del request.session['guest_email_id']
             except:
