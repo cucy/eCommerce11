@@ -1,10 +1,11 @@
 from django.db import models
-
+import stripe
 from django.conf import settings
 from django.db.models.signals import post_save
 from accounts.models import GuestEmail
 
 User = settings.AUTH_USER_MODEL
+stripe.api_key = "sk_test_cu1lQmcg1OLffhLvYrSCp5XE"
 
 
 # abc@teamcfe.com -->> 1000000 billing profiles
