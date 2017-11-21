@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'billing.apps.BillingConfig',
     'addresses.apps.AddressesConfig',
     'analytics.apps.AnalyticsConfig',  # 自定义分析
+    'marketing.apps.MarketingConfig',
 ]
 AUTH_USER_MODEL = 'accounts.User'
 MIDDLEWARE = [
@@ -139,3 +140,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'static_cdn', 'media_root')
 LOGOUT_REDIRECT_URL = '/login/'
 FORCE_SESSION_TO_ONE = False
 FORCE_INACTIVE_USER_ENDSESSION = False
+
+MAILCHIMP_API_KEY = "f339b7ad75875992d223a43c0ab1d4a4-us17"
+MAILCHIMP_DATA_CENTER = "us17"
+MAILCHIMP_EMAIL_LIST_ID = "e2ef12efee"
