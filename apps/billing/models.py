@@ -3,14 +3,15 @@ from django.db import models
 from django.db.models.signals import post_save, pre_save
 
 from accounts.models import GuestEmail
+
 User = settings.AUTH_USER_MODEL
 
 # abc@teamcfe.com -->> 1000000 billing profiles
 # user abc@teamcfe.com -- 1 billing profile
 
 import stripe
-stripe.api_key = "sk_test_cu1lQmcg1OLffhLvYrSCp5XE"
 
+stripe.api_key = "sk_test_cu1lQmcg1OLffhLvYrSCp5XE"
 
 
 class BillingProfileManager(models.Manager):
@@ -31,6 +32,7 @@ class BillingProfileManager(models.Manager):
         else:
             pass
         return obj, created
+
 
 class BillingProfile(models.Model):
     user = models.OneToOneField(User, null=True, blank=True)
@@ -64,6 +66,12 @@ class BillingProfile(models.Model):
             return default_cards.first()
         return None
 
+    def set_cards_inactive(self):
+        cards_qs = self.get_cards()
+        cards_qs.update(active=False)
+        return cards_qs.filter(active=True).count()
+
+
 def billing_profile_created_receiver(sender, instance, *args, **kwargs):
     if not instance.customer_id and instance.email:
         print("ACTUAL API REQUEST Send to stripe/braintree")
@@ -73,6 +81,7 @@ def billing_profile_created_receiver(sender, instance, *args, **kwargs):
         print(customer)
         instance.customer_id = customer.id
 
+
 pre_save.connect(billing_profile_created_receiver, sender=BillingProfile)
 
 
@@ -80,10 +89,14 @@ def user_created_receiver(sender, instance, created, *args, **kwargs):
     if created and instance.email:
         BillingProfile.objects.get_or_create(user=instance, email=instance.email)
 
+
 post_save.connect(user_created_receiver, sender=User)
 
 
 class CardManager(models.Manager):
+    def all(self, *args, **kwargs):  # ModelKlass.objects.all() --> ModelKlass.objects.filter(active=True)
+        return self.get_queryset().filter(active=True)
+
     def add_new(self, billing_profile, token):
         if token:
             customer = stripe.Customer.retrieve(billing_profile.customer_id)
@@ -111,6 +124,8 @@ class Card(models.Model):
     exp_year = models.IntegerField(null=True, blank=True)
     last4 = models.CharField(max_length=4, null=True, blank=True)
     default = models.BooleanField(default=True)
+    active = models.BooleanField(default=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     objects = CardManager()
 
