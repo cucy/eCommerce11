@@ -11,9 +11,11 @@ from carts.views import cart_detail_api_view
 from billing.views import payment_method_view, payment_method_createview
 from marketing.views import MarketingPreferenceUpdateView, MailchimpWebhookView
 from addresses.views import (
+    AddressCreateView,
     AddressListView,
     checkout_address_create_view,
-    checkout_address_reuse_view
+    checkout_address_reuse_view,
+    AddressUpdateView,
 )
 from .views import home_page, about_page, contact_page
 
@@ -27,6 +29,8 @@ urlpatterns = [
     url(r'^accounts/', include("accounts.passwords.urls")),
     url(r'^address/$', RedirectView.as_view(url='/addresses')),
     url(r'^addresses/$', AddressListView.as_view(), name='addresses'),
+    url(r'^addresses/create/$', AddressCreateView.as_view(), name='address-create'),
+    url(r'^addresses/(?P<pk>\d+)/$', AddressUpdateView.as_view(), name='address-update'),
     url(r'^checkout/address/create/$', checkout_address_create_view, name='checkout_address_create'),
     url(r'^checkout/address/reuse/$', checkout_address_reuse_view, name='checkout_address_reuse'),
     url(r'^register/guest/$', GuestRegisterView.as_view(), name='guest_register'),
