@@ -94,11 +94,18 @@ class Order(models.Model):
         return new_total
 
     def check_done(self):
+        shipping_address_required = not self.cart.is_digital
+        shipping_done = False
+        if shipping_address_required and self.shipping_address:
+            shipping_done = True
+        elif shipping_address_required and not self.shipping_address:
+            shipping_done = False
+        else:
+            shipping_done = True
         billing_profile = self.billing_profile
-        shipping_address = self.shipping_address
         billing_address = self.billing_address
         total = self.total
-        if billing_profile and shipping_address and billing_address and total > 0:
+        if billing_profile and shipping_done and billing_address and total > 0:
             return True
         return False
 
@@ -118,6 +125,7 @@ def pre_save_create_order_id(sender, instance, *args, **kwargs):
 
     if instance.shipping_address and not instance.shipping_address_final:
         instance.shipping_address_final = instance.shipping_address.get_address()
+
     if instance.billing_address and not instance.billing_address_final:
         instance.billing_address_final = instance.billing_address.get_address()
 
@@ -140,7 +148,7 @@ post_save.connect(post_save_cart_total, sender=Cart)
 
 
 def post_save_order(sender, instance, created, *args, **kwargs):
-    print("running")
+    # print("running")
     if created:
         print("Updating... first")
         instance.update_total()
