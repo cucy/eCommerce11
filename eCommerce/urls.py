@@ -17,6 +17,7 @@ from addresses.views import (
     checkout_address_reuse_view,
     AddressUpdateView,
 )
+from orders.views import LibraryView
 from .views import home_page, about_page, contact_page
 
 urlpatterns = [
@@ -41,6 +42,7 @@ urlpatterns = [
     url(r'^billing/payment-method/create/$', payment_method_createview, name='billing-payment-method-endpoint'),
     url(r'^register/$', RegisterView.as_view(), name='register'),
     url(r'^bootstrap/$', TemplateView.as_view(template_name='example.html')),
+    url(r'^library/$', LibraryView.as_view(), name='library'),
     url(r'^orders/', include("orders.urls", namespace='orders')),
     url(r'^products/', include("products.urls", namespace='products')),
     url(r'^search/', include("search.urls", namespace='search')),
