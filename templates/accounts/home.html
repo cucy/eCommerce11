@@ -23,7 +23,7 @@
                     <h4 class="card-title">Billing</h4>
 
                     <div class="list-group">
-                        <a href="#" class="list-group-item">Order</a>
+                        <a class='list-group-item' href='{% url "orders:list" %}'>Orders</a>
                         <a href='{% url "billing-payment-method" %}' class="list-group-item">Payment Methods</a>
                         <a href="#" class="list-group-item">Addresses</a>
                     </div>
