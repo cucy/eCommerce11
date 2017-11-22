@@ -1,21 +1,22 @@
-from django.db import models
+from datetime import timedelta
 from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.db import models
 from django.db.models.signals import pre_save, post_save
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager
 )
+
 from django.core.mail import send_mail
 from django.template.loader import get_template
-from datetime import timedelta
-
 from django.utils import timezone
 
 from eCommerce.utils import random_string_generator, unique_key_generator
 
+# send_mail(subject, message, from_email, recipient_list, html_message)
+
 DEFAULT_ACTIVATION_DAYS = getattr(settings, 'DEFAULT_ACTIVATION_DAYS', 7)
 
-
-# send_mail(subject, message, from_email, recipient_list, html_message)
 
 class UserManager(BaseUserManager):
     def create_user(self, email, full_name=None, password=None, is_active=True, is_staff=False, is_admin=False):
@@ -140,7 +141,7 @@ class EmailActivation(models.Model):
 
     def can_activate(self):
         qs = EmailActivation.objects.filter(pk=self.pk).confirmable()  # 1 object
-        if qs.exits():
+        if qs.exists():
             return True
         return False
 
@@ -166,8 +167,8 @@ class EmailActivation(models.Model):
     def send_activation(self):
         if not self.activated and not self.forced_expired:
             if self.key:
-                base_url = getattr(settings, 'BASE_URL', 'https://www.pythonecommerce.com')
-                key_path = self.key  # use reverse
+                base_url = getattr(settings, 'BASE_URL', '127.0.0.1')
+                key_path = reverse("account:email-activate", kwargs={'key': self.key})  # use reverse
                 path = "{base}{path}".format(base=base_url, path=key_path)
                 context = {
                     'path': path,
