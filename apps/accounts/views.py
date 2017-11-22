@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, FormView, DetailView
-from django.http import HttpResponse
+from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.utils.http import is_safe_url
 
@@ -53,6 +53,9 @@ class LoginView(FormView):
         password = form.cleaned_data.get("password")
         user = authenticate(request, username=email, password=password)
         if user is not None:
+            if not user.is_active:
+                messages.error(request, "This user is inactive")
+                return super(LoginView, self).form_invalid(form)
             login(request, user)
             # 用户登录触发信号 save session to models
             user_logged_in.send(user.__class__, instance=user, request=request)
