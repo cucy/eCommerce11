@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models.signals import pre_save, post_save
 from django.core.urlresolvers import reverse
 
+
 from addresses.models import Address
 from billing.models import BillingProfile
 from carts.models import Cart
@@ -17,7 +18,6 @@ ORDER_STATUS_CHOICES = (
     ('refunded', 'Refunded'),
 )
 
-
 class OrderManagerQuerySet(models.query.QuerySet):
     def by_request(self, request):
         billing_profile, created = BillingProfile.objects.new_or_get(request)
@@ -25,7 +25,6 @@ class OrderManagerQuerySet(models.query.QuerySet):
 
     def not_created(self):
         return self.exclude(status='created')
-
 
 class OrderManager(models.Manager):
     def get_queryset(self):
@@ -50,6 +49,7 @@ class OrderManager(models.Manager):
                 cart=cart_obj)
             created = True
         return obj, created
+
 
 
 # Random, Unique
@@ -111,15 +111,21 @@ class Order(models.Model):
             return True
         return False
 
-    def is_paid(self):
-        if self.status == 'paid':
-            return True
-        return False
+    def update_purchases(self):
+        for p in self.cart.products.all():
+            obj, created = ProductPurchase.objects.get_or_create(
+                order_id=self.order_id,
+                product=p,
+                billing_profile=self.billing_profile
+            )
+        return ProductPurchase.objects.filter(order_id=self.order_id).count()
 
     def mark_paid(self):
-        if self.check_done():
-            self.status = "paid"
-            self.save()
+        if self.status != 'paid':
+            if self.check_done():
+                self.status = "paid"
+                self.save()
+                self.update_purchases()
         return self.status
 
 
@@ -150,7 +156,6 @@ def post_save_cart_total(sender, instance, created, *args, **kwargs):
             order_obj = qs.first()
             order_obj.update_total()
 
-
 post_save.connect(post_save_cart_total, sender=Cart)
 
 
@@ -170,9 +175,9 @@ class ProductPurchaseManager(models.Model):
 
 
 class ProductPurchase(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
-    billing_profile = models.ForeignKey(BillingProfile)
-    product = models.ForeignKey(Product)
+    order_id = models.CharField(max_length=120)
+    billing_profile = models.ForeignKey(BillingProfile)  # billingprofile.productpurchase_set.all()
+    product = models.ForeignKey(Product)  # product.productpurchase_set.count()
     refunded = models.BooleanField(default=False)
     updated = models.DateTimeField(auto_now=True)
     timestamp = models.DateTimeField(auto_now_add=True)
