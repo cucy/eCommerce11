@@ -1,17 +1,36 @@
-from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
+from django.db import models
 from django.db.models.signals import pre_save, post_save
 
-User = settings.AUTH_USER_MODEL
+from accounts.signals import user_logged_in
 from .signals import object_viewed_signal
 from .utils import get_client_ip
-from accounts.signals import user_logged_in  # 用户登录触发信号
+
+User = settings.AUTH_USER_MODEL
 
 FORCE_SESSION_TO_ONE = getattr(settings, 'FORCE_SESSION_TO_ONE', False)
 FORCE_INACTIVE_USER_ENDSESSION = getattr(settings, 'FORCE_INACTIVE_USER_ENDSESSION', False)
+
+
+class ObjectViewedQuerySet(models.query.QuerySet):
+    def by_model(self, model_class, model_queryset=False):
+        c_type = ContentType.objects.get_for_model(model_class)
+        qs = self.filter(content_type=c_type)
+        if model_queryset:
+            viewed_ids = [x.object_id for x in qs]
+            return model_class.objects.filter(pk__in=viewed_ids)
+        return qs
+
+
+class ObjectViewedManager(models.Manager):
+    def get_queryset(self):
+        return ObjectViewedQuerySet(self.model, using=self._db)
+
+    def by_model(self, model_class, model_queryset=False):
+        return self.get_queryset().by_model(model_class, model_queryset=model_queryset)
 
 
 class ObjectViewed(models.Model):
@@ -22,6 +41,8 @@ class ObjectViewed(models.Model):
     content_object = GenericForeignKey('content_type', 'object_id')  # Product instance
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    objects = ObjectViewedManager()
+
     def __str__(self):
         return "%s viewed on %s" % (self.content_object, self.timestamp)
 
@@ -31,7 +52,7 @@ class ObjectViewed(models.Model):
         verbose_name_plural = 'Objects viewed'
 
 
-def object_viewed_receiver(sender, instance, request, **kwargs):
+def object_viewed_receiver(sender, instance, request, *args, **kwargs):
     c_type = ContentType.objects.get_for_model(sender)  # instance.__class__
     user = None
     if request.user.is_authenticated():
@@ -69,7 +90,6 @@ class UserSession(models.Model):
 
 
 def post_save_session_receiver(sender, instance, created, *args, **kwargs):
-    """接收session保存前的信号"""
     if created:
         qs = UserSession.objects.filter(user=instance.user, ended=False, active=False).exclude(id=instance.id)
         for i in qs:
@@ -83,7 +103,6 @@ if FORCE_SESSION_TO_ONE:
 
 
 def post_save_user_changed_receiver(sender, instance, created, *args, **kwargs):
-    """改变 update触发信号"""
     if not created:
         if instance.is_active == False:
             qs = UserSession.objects.filter(user=instance.user, ended=False, active=False)
@@ -106,4 +125,4 @@ def user_logged_in_receiver(sender, instance, request, *args, **kwargs):
     )
 
 
-user_logged_in.connect(user_logged_in_receiver)  # 用户登录触发信号 创建session
+user_logged_in.connect(user_logged_in_receiver)
