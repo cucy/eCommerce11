@@ -71,6 +71,10 @@ MIDDLEWARE = [
 LOGOUT_REDIRECT_URL = '/login/'
 ROOT_URLCONF = 'eCommerce.urls'
 
+LOGIN_URL = '/login/'
+LOGIN_URL_REDIRECT = '/'
+LOGOUT_URL = '/logout/'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
