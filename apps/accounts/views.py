@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.utils.decorators import method_decorator
-from django.views.generic import CreateView, FormView, DetailView, View
+from django.views.generic import CreateView, FormView, DetailView, UpdateView, View
 from django.views.generic.edit import FormMixin
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -12,7 +12,7 @@ from django.utils.http import is_safe_url
 from django.utils.safestring import mark_safe
 
 from eCommerce.mixins import NextUrlMixin, RequestFormAttachMixin
-from .forms import LoginForm, RegisterForm, GuestForm, ReactivateEmailForm
+from .forms import LoginForm, RegisterForm, GuestForm, ReactivateEmailForm, UserDetailChangeForm
 from .models import GuestEmail, EmailActivation
 from .signals import user_logged_in
 
@@ -131,6 +131,22 @@ class RegisterView(CreateView):
     form_class = RegisterForm
     template_name = 'accounts/register.html'
     success_url = '/login/'
+
+
+class UserDetailUpdateView(LoginRequiredMixin, UpdateView):
+    form_class = UserDetailChangeForm
+    template_name = 'accounts/detail-update-view.html'
+
+    def get_object(self):
+        return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super(UserDetailUpdateView, self).get_context_data(**kwargs)
+        context['title'] = 'Change Your Account Details'
+        return context
+
+    def get_success_url(self):
+        return reverse("account:home")
 
 # def login_page(request):
 #     form = LoginForm(request.POST or None)
