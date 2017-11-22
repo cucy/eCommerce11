@@ -170,3 +170,4 @@ SECURE_FRAME_DENY = False
 LOGIN_URL = '/login/'
 LOGIN_URL_REDIRECT = '/'
 LOGOUT_URL = '/logout/'
+BASE_URL = '127.0.0.1:8000'
