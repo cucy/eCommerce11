@@ -21,6 +21,7 @@ urlpatterns = [
     # url(r'^login/$', LoginView.as_view(), name='login'),
     url(r'^accounts/$', RedirectView.as_view(url='/account')),
     url(r'^account/', include("accounts.urls", namespace='account')),
+    url(r'^accounts/', include("accounts.passwords.urls")),
     url(r'^checkout/address/create/$', checkout_address_create_view, name='checkout_address_create'),
     url(r'^checkout/address/reuse/$', checkout_address_reuse_view, name='checkout_address_reuse'),
     url(r'^register/guest/$', guest_register_view, name='guest_register'),
